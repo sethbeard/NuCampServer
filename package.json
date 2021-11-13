@@ -14,5 +14,17 @@
     "mongoose": "^5.10.9",
     "mongoose-currency": "^0.2.0",
     "morgan": "~1.9.1"
-  }
+  },
+  "main": "app.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sethbeard/NuCampServer.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sethbeard/NuCampServer/issues"
+  },
+  "homepage": "https://github.com/sethbeard/NuCampServer#readme",
+  "description": ""
 }
