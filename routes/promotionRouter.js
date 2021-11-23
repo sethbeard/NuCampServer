@@ -1,7 +1,7 @@
 const express = require("express");
 const promotionRouter = express.Router();
 const Promotion = require("../models/promotions");
-
+const authenticate = require("../authenticate");
 promotionRouter
   .route("/")
   .get((req, res, next) => {
@@ -13,7 +13,7 @@ promotionRouter
       })
       .catch((err) => next(err));
   })
-  .post((req, res, next) => {
+  .post(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Promotion.create(req.body)
       .then((promotion) => {
         console.log("Promotion Created ", promotion);
@@ -23,19 +23,23 @@ promotionRouter
       })
       .catch((err) => next(err));
   })
-  .put((req, res, next) => {
+  .put(authenticate.verifyUser, (req, res, next) => {
     res.statusCode = 403;
     res.end("PUT operation not supported on /promotions");
   })
-  .delete((req, res, next) => {
-    Promotion.deleteMany()
-      .then((response) => {
-        res.statusCode = 200;
-        res.setHeader("Content-Type", "application/json");
-        res.json(response);
-      })
-      .catch((err) => next(err));
-  });
+  .delete(
+    authenticate.verifyUser,
+    authenticate.verifyAdmin,
+    (req, res, next) => {
+      Promotion.deleteMany()
+        .then((response) => {
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.json(response);
+        })
+        .catch((err) => next(err));
+    }
+  );
 promotionRouter
   .route("/:promotionId")
 
@@ -48,14 +52,14 @@ promotionRouter
       })
       .catch((err) => next(err));
   })
-  .post((req, res) => {
+  .post(authenticate.verifyUser, (req, res) => {
     res.statusCode = 403;
     res.end(
       `POST operation not supported on /promotions/${req.params.promotionId}`
     );
   })
 
-  .put((req, res, next) => {
+  .put(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Promotion.findByIdAndUpdate(
       req.params.promotionId,
       {
@@ -71,25 +75,29 @@ promotionRouter
       .catch((err) => next(err));
   })
 
-  .delete((req, res, next) => {
-    Promotion.findById(req.params.promotionId)
-      .then((promotion) => {
-        if (promotion) {
-          promotion
-            .remove()
-            .then((promotion) => {
-              res.statusCode = 200;
-              res.setHeader("Content-Type", "application/json");
-              res.json(promotion);
-            })
-            .catch((err) => next(err));
-        } else {
-          err = new Error(`Campsite ${req.params.campsiteId} not found`);
-          err.status = 404;
-          return next(err);
-        }
-      })
-      .catch((err) => next(err));
-  });
+  .delete(
+    authenticate.verifyUser,
+    authenticate.verifyAdmin,
+    (req, res, next) => {
+      Promotion.findById(req.params.promotionId)
+        .then((promotion) => {
+          if (promotion) {
+            promotion
+              .remove()
+              .then((promotion) => {
+                res.statusCode = 200;
+                res.setHeader("Content-Type", "application/json");
+                res.json(promotion);
+              })
+              .catch((err) => next(err));
+          } else {
+            err = new Error(`Campsite ${req.params.campsiteId} not found`);
+            err.status = 404;
+            return next(err);
+          }
+        })
+        .catch((err) => next(err));
+    }
+  );
 
 module.exports = promotionRouter;
